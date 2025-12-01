@@ -1,42 +1,47 @@
-from django.core.exceptions import ImproperlyConfigured
-import json
 import os
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+import json
+from django.core.exceptions import ImproperlyConfigured
 from unipath import Path
+
+# Build paths inside the project
 BASE_DIR = Path(__file__).resolve().ancestor(3)
 
-# ============================================================
-# SECRET KEY – Manejo dual: LOCAL (secret.json) / PRODUCCIÓN (env)
-# ============================================================
+# ======================================================
+# SECRET KEY (LOCAL usa secret.json / PRODUCCIÓN usa env)
+# ======================================================
 
-secret = {}
+def get_secret_key():
+    """
+    Local: lee secret.json
+    Producción: usa la variable DJANGO_SECRET_KEY
+    """
+    # Si está en variable de entorno (Render), úsala
+    env_key = os.getenv("DJANGO_SECRET_KEY")
+    if env_key:
+        return env_key
 
-# Solo intentar abrir secret.json si existe (LOCAL)
-if os.path.exists("secret.json"):
-    with open("secret.json") as f:
-        secret = json.loads(f.read())
+    # Si no existe, estamos local → leer secret.json
+    secret_file = BASE_DIR.child("secret.json")
 
-def get_secret(secret_name, secrets=secret):
+    if not secret_file.exists():
+        raise ImproperlyConfigured(
+            "No se encontró SECRET_KEY. Define DJANGO_SECRET_KEY "
+            "o usa el archivo secret.json local."
+        )
+
+    with open(secret_file) as f:
+        secrets = json.load(f)
+
     try:
-        return secrets[secret_name]
+        return secrets["SECRET_KEY"]
     except KeyError:
-        msg = f"La variable {secret_name} no existe en secret.json"
-        raise ImproperlyConfigured(msg)
+        raise ImproperlyConfigured("SECRET_KEY no existe dentro de secret.json")
 
-# En producción Render usa DJANGO_SECRET_KEY
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", secret.get("SECRET_KEY"))
+SECRET_KEY = get_secret_key()
 
-# Si no hay KEY en local NI en entorno → error claro
-if not SECRET_KEY:
-    raise ImproperlyConfigured("No se encontró SECRET_KEY. "
-                               "Define DJANGO_SECRET_KEY o usa secret.json")
+# ======================================================
 
-
-# ============================================================
-# Application definition
-# ============================================================
-
+# Apps
 DJANGO_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -89,40 +94,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nequi.wsgi.application'
 
-# ============================================================
-# Password validation
-# ============================================================
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# ============================================================
-# Internationalization
-# ============================================================
-
 LANGUAGE_CODE = 'es-ES'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
-# ============================================================
-# Default primary key field type
-# ============================================================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
