@@ -42,6 +42,8 @@ class TransactionSerializer(serializers.Serializer):
         if transaction_type == "WITHDRAW":
             if amount > account_origen.balance:
                 raise serializers.ValidationError('El monto es mayor al saldo actual')
+            if amount == 0:
+                raise serializers.ValidationError("No se puede hacer un retiro de $0")
         
         elif transaction_type == "TRANSFER":
             target_account = data['target_account']
