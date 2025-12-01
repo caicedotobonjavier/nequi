@@ -46,6 +46,8 @@ class CreateUserApiView(CreateAPIView):
             user = user
         )
 
+        login(self.request, user)
+
         data_user = {
             'user' : user.username,
             'email' : user.email,
