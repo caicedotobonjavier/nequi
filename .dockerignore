@@ -1,0 +1,13 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+venv
+env
+.git
+.gitignore
+secret.json
+node_modules
+*.sqlite3
+*.log
