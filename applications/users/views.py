@@ -29,13 +29,15 @@ class CreateUserApiView(CreateAPIView):
         username = serializador.validated_data['username']
         email = serializador.validated_data['email']
         document = serializador.validated_data['document']
+        password = serializador.validated_data['password']
         phone = serializador.validated_data['phone']
         address = serializador.validated_data['address']
 
         user = User.objects.create_user(
-            username = username,
-            email = email,
-            document = document,
+            username,
+            email,
+            document,
+            password,
             phone = phone,
             address = address
         )
