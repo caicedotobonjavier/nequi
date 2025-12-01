@@ -1,29 +1,41 @@
 from django.core.exceptions import ImproperlyConfigured
 import json
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from unipath import Path
 BASE_DIR = Path(__file__).resolve().ancestor(3)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# ============================================================
+# SECRET KEY – Manejo dual: LOCAL (secret.json) / PRODUCCIÓN (env)
+# ============================================================
 
-# SECURITY WARNING: keep the secret key used in production secret!
-with open("secret.json") as f:
-    secret = json.loads(f.read())
+secret = {}
 
-def get_secret(secrest_name, secrets=secret):
+# Solo intentar abrir secret.json si existe (LOCAL)
+if os.path.exists("secret.json"):
+    with open("secret.json") as f:
+        secret = json.loads(f.read())
+
+def get_secret(secret_name, secrets=secret):
     try:
-        return secrets[secrest_name]
-    except:
-        msg = "la variable no %s existe" %secrest_name
+        return secrets[secret_name]
+    except KeyError:
+        msg = f"La variable {secret_name} no existe en secret.json"
         raise ImproperlyConfigured(msg)
-    
-SECRET_KEY = get_secret('SECRET_KEY')
+
+# En producción Render usa DJANGO_SECRET_KEY
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", secret.get("SECRET_KEY"))
+
+# Si no hay KEY en local NI en entorno → error claro
+if not SECRET_KEY:
+    raise ImproperlyConfigured("No se encontró SECRET_KEY. "
+                               "Define DJANGO_SECRET_KEY o usa secret.json")
 
 
-
+# ============================================================
 # Application definition
+# ============================================================
 
 DJANGO_APPS = (
     'django.contrib.admin',
@@ -43,9 +55,8 @@ LOCAL_APPS = (
     'applications.users',
     'applications.account',
     'applications.transaction',
-     'applications.auditlog',
+    'applications.auditlog',
 )
-
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -78,9 +89,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nequi.wsgi.application'
 
-
+# ============================================================
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+# ============================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -97,9 +108,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+# ============================================================
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
+# ============================================================
 
 LANGUAGE_CODE = 'es-ES'
 
@@ -109,8 +120,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+# ============================================================
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+# ============================================================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
