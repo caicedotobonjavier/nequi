@@ -46,7 +46,7 @@ class CreateUserApiView(CreateAPIView):
             user = user
         )
 
-        login(self.request, user)
+        
 
         data_user = {
             'user' : user.username,
@@ -95,7 +95,7 @@ class LoginApiView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-
+        login(self.request, user)
         token, created = Token.objects.get_or_create(user=user)
 
         print(token)

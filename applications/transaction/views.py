@@ -24,8 +24,8 @@ from .services import service_deposit, service_withdraw, service_transfer
 
 class CreateTransactionApiView(CreateAPIView):
     serializer_class = TransactionSerializer
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = [IsAuthenticated]
+    #authentication_classes = (TokenAuthentication,)
+    #permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         serializador = self.serializer_class(data=request.data)
