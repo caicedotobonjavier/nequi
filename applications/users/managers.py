@@ -23,7 +23,7 @@ class UserManager(BaseUserManager, models.Manager):
     
 
     def create_user(self, username, email, document, password=None, **extra_fields):
-        return self._create_user(username, email, document, password, True, True, True, **extra_fields)
+        return self._create_user(username, email, document, password, True, True, False, **extra_fields)
     
 
     def create_superuser(self, username, email, document, password=None, **extra_fields):
